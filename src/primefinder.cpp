@@ -12,7 +12,7 @@ using namespace std;
 PrimeFinder::PrimeFinder( const Transaction& tran, const Map& args ) :
     m_quantityToFind( args["quantity"] ),
     m_reportingInterval( args["interval"] ),
-    m_cb( tran, dynamic_cast<const CallBack&>(args["callback"]) ),
+    m_cb( tran, args["callback"] ),
     m_thrd()
 {
 }
