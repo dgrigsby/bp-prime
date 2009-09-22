@@ -26,7 +26,7 @@ private:
 };
 
 
-BP_SERVICE_DESC( Prime, "Prime", "0.0.1", "Calculates prime numbers." )
+BP_SERVICE_DESC( Prime, "Prime", "0.0.4", "Calculates prime numbers." )
   ADD_BP_METHOD( Prime, calc, "Calculate prime numbers." )
     ADD_BP_METHOD_ARG( calc, "quantity", Integer, true,
                        "How many primes to calculate")
