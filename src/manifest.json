@@ -1,0 +1,11 @@
+{
+  "type": "standalone",
+  "CoreletLibrary": "@ServiceLibrary@",
+  "strings": {
+    "en": {
+      "title": "Prime",
+      "summary": "Calculates primes."
+    }
+  }
+}
+ 
