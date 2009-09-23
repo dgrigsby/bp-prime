@@ -12,6 +12,7 @@ using namespace std;
 PrimeFinder::PrimeFinder( const Transaction& tran, const Map& args ) :
     m_quantityToFind( args["quantity"] ),
     m_reportingInterval( args["interval"] ),
+    m_tran( tran ),
     m_cb( tran, args["callback"] ),
     m_thrd()
 {
@@ -23,7 +24,7 @@ PrimeFinder::~PrimeFinder()
     // TODO: review.
     m_thrd.join();
 
-    // TODO: call tran.complete?
+    // TODO: call tran.complete here?
 }
 
 
@@ -67,6 +68,9 @@ void PrimeFinder::findPrimes_naive()
             }
         }
     }
+
+    // TODO: this may not be exactly the right place.
+//  reportComplete();
 }
 
 
@@ -92,3 +96,9 @@ void PrimeFinder::onHop( void* context )
 }
 
 
+void PrimeFinder::reportComplete()
+{
+    // LLoyd says hopping not strictly necessary.
+    // So let's not hop for this one.
+    m_tran.complete( Bool(true) );
+}
