@@ -57,10 +57,14 @@ void Prime::calc( const Transaction& tran, const Map& args )
         return;
     }
 
+/*    
     // Create a prime finder that will do work in a new thread.
     // TODO: When/where to delete this thing?
     PrimeFinder* pFndr = new PrimeFinder( tran, args );
     pFndr->run();
+*/
+
+    launchFindOperation( tran, args );
 }
 
           

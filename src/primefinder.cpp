@@ -13,32 +13,13 @@ PrimeFinder::PrimeFinder( const Transaction& tran, const Map& args ) :
     m_quantityToFind( args["quantity"] ),
     m_reportingInterval( args["interval"] ),
     m_tran( tran ),
-    m_cb( tran, args["callback"] ),
-    m_thrd()
+    m_cb( tran, args["callback"] )
 {
 }
 
 
 PrimeFinder::~PrimeFinder()
 {
-    // TODO: review.
-    m_thrd.join();
-
-    // TODO: call tran.complete here?
-}
-
-
-void PrimeFinder::run()
-{
-    m_thrd.run( threadFunc, this );
-}
-
-
-void* PrimeFinder::threadFunc( void* cookie )
-{
-    PrimeFinder* fndr = (PrimeFinder*) cookie;
-    fndr->findPrimes_naive();
-    return NULL;
 }
 
 
@@ -47,7 +28,7 @@ void* PrimeFinder::threadFunc( void* cookie )
 // This is a naive implementation with very little optimization.
 // See: http://en.wikipedia.org/wiki/Primality_test
 //
-void PrimeFinder::findPrimes_naive()
+void PrimeFinder::run()
 {
     long long quantityFound = 0;
     for (long long n = 2; quantityFound < m_quantityToFind; ++n) {
@@ -69,36 +50,61 @@ void PrimeFinder::findPrimes_naive()
         }
     }
 
-    // TODO: this may not be exactly the right place.
-//  reportComplete();
+    reportComplete();
 }
 
 
-void PrimeFinder::reportPrime(  long long position, long long value )
+void PrimeFinder::reportPrime( long long position, long long value )
 {
     // Send results to our onHop() on the original transaction thread.
     // onHop will free this data.
-    Map* pmArgs = new Map;
-    pmArgs->add( "position", Integer(position).clone() );
-    pmArgs->add( "value", Integer(value).clone() );
+    Map args;
+    args.add( "position", Integer(position).clone() );
+    args.add( "value", Integer(value).clone() );
 
-    hop( pmArgs );
-}
-
-
-void PrimeFinder::onHop( void* context )
-{
-    Map* pmArgs = (Map*) context;
-
-    m_cb.invoke( *pmArgs );
-    
-    delete pmArgs;
+    m_cb.invoke( args );
 }
 
 
 void PrimeFinder::reportComplete()
 {
-    // LLoyd says hopping not strictly necessary.
-    // So let's not hop for this one.
     m_tran.complete( Bool(true) );
 }
+
+
+
+struct FindData
+{
+    FindData( const bplus::service::Transaction& tran_,
+              const bplus::Map& args_ ) :
+        tran( tran_ ),
+        args( args_ )
+    {}
+
+    bplus::service::Transaction tran;
+    bplus::Map args;            
+};
+
+
+void* calcAndReportPrimes( void* data )
+{
+    FindData* fd = (FindData*) data;
+    
+    PrimeFinder fndr( fd->tran, fd->args );
+    fndr.run();
+
+    return NULL;
+}
+
+
+void launchFindOperation( const Transaction& tran, const Map& args )
+{
+    FindData* fd = new FindData( tran, args );
+
+    bplus::thread::Thread thrd;
+    thrd.run( calcAndReportPrimes, fd );
+    thrd.detach();
+}
+
+
+
