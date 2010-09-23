@@ -48,6 +48,9 @@ void PrimeFinder::run()
                 reportPrime( quantityFound, n );
             }
         }
+
+		// relinquish cpu a bit.
+		Sleep(0);
     }
 
     reportComplete();
@@ -56,8 +59,6 @@ void PrimeFinder::run()
 
 void PrimeFinder::reportPrime( long long position, long long value )
 {
-    // Send results to our onHop() on the original transaction thread.
-    // onHop will free this data.
     Map args;
     args.add( "position", Integer(position).clone() );
     args.add( "value", Integer(value).clone() );
